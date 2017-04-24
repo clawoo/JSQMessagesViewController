@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  set the fileURL property or isReadyToPlay property, respectively. The background thumbnail
  *  is optional.
  */
-- (instancetype)initWithFileURL:(NSURL *)fileURL
+- (instancetype)initWithFileURL:(nullable NSURL *)fileURL
                   isReadyToPlay:(BOOL)isReadyToPlay
                  thumbnailImage:(nullable UIImage *)thumbnailImage;
 

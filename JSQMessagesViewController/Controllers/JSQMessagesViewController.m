@@ -116,6 +116,7 @@ static void JSQInstallWorkaroundForSheetPresentationIssue26295020(void) {
 @property (nonatomic) NSLayoutConstraint *toolbarHeightConstraint;
 
 @property (strong, nonatomic) NSIndexPath *selectedIndexPathForMenu;
+@property (nonatomic) BOOL keyboardMonitoringDisabled;
 
 @end
 
@@ -871,9 +872,28 @@ static void JSQInstallWorkaroundForSheetPresentationIssue26295020(void) {
 
 - (void)jsq_setCollectionViewInsetsTopValue:(CGFloat)top bottomValue:(CGFloat)bottom
 {
-    UIEdgeInsets insets = UIEdgeInsetsMake(self.topLayoutGuide.length + top, 0.0f, bottom, 0.0f);
+    UIEdgeInsets insets = UIEdgeInsetsMake(MAX(self.topLayoutGuide.length, 64) + top, 0.0f, bottom, 0.0f);
     self.collectionView.contentInset = insets;
     self.collectionView.scrollIndicatorInsets = insets;
+    
+    NSIndexPath *lastIndexPath = nil;
+    for (NSIndexPath *indexPath in [_collectionView indexPathsForVisibleItems]) {
+        if (lastIndexPath == nil) {
+            lastIndexPath = indexPath;
+        }
+        else if (indexPath.row > lastIndexPath.row) {
+            lastIndexPath = indexPath;
+        }
+    }
+    if (_collectionView != nil && lastIndexPath != nil) {
+        if (lastIndexPath.row == [_collectionView numberOfItemsInSection:0] - 1) {
+            [self scrollToBottomAnimated:false];
+        }
+    }
+}
+
+- (void)setDefaultCollectionViewInsets {
+    [self jsq_setCollectionViewInsetsTopValue:0 bottomValue:CGRectGetHeight(self.inputToolbar.frame)];
 }
 
 - (BOOL)jsq_isMenuVisible
@@ -934,7 +954,7 @@ static void JSQInstallWorkaroundForSheetPresentationIssue26295020(void) {
 
     CGRect keyboardEndFrame = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
 
-    if (CGRectIsNull(keyboardEndFrame)) {
+    if (CGRectIsNull(keyboardEndFrame) || _keyboardMonitoringDisabled) {
         return;
     }
 
@@ -952,6 +972,14 @@ static void JSQInstallWorkaroundForSheetPresentationIssue26295020(void) {
                                                        bottomValue:CGRectGetHeight(keyboardEndFrame) + insets.bottom];
                      }
                      completion:nil];
+}
+
+- (void)disableKeyboardFrameMonitoring {
+    _keyboardMonitoringDisabled = true;
+}
+
+- (void)enableKeyboardFrameMonitoring {
+    _keyboardMonitoringDisabled = false;
 }
 
 @end

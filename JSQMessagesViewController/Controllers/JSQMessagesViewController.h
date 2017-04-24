@@ -304,6 +304,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)didReceiveMenuWillHideNotification:(NSNotification *)notification;
 
+- (void)setDefaultCollectionViewInsets;
+- (void)disableKeyboardFrameMonitoring;
+- (void)enableKeyboardFrameMonitoring;
+
+
 @end
 
 NS_ASSUME_NONNULL_END
